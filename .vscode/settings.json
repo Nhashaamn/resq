@@ -1,0 +1,13 @@
+{
+  "dart.debugExternalPackageLibraries": false,
+  "dart.debugSdkLibraries": false,
+  "dart.showInspectorNotificationsForWidgetErrors": true,
+  "dart.vmServicePort": 0,
+  "dart.flutterRunAdditionalArgs": [
+    "--disable-service-auth-codes"
+  ],
+  "dart.flutterHotReloadOnSave": "allEdits",
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true
+}
+

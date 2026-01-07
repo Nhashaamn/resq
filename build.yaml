@@ -1,0 +1,19 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        generate_for:
+          - lib/**/*.dart
+      json_serializable:
+        generate_for:
+          - lib/**/*.dart
+      retrofit_generator:
+        generate_for:
+          - lib/**/*.dart
+      injectable_generator:
+        generate_for:
+          - lib/**/*.dart
+      hive_generator:
+        generate_for:
+          - lib/**/*.dart
+
