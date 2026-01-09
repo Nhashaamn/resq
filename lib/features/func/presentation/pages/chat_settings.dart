@@ -412,7 +412,8 @@ class _ChatSettingsState extends ConsumerState<ChatSettings> {
       appBar: AppbarWidget(
         title: 'Chat Settings',
         icon: Icons.close,
-        onTap: () => context.go('/home'),
+        onTap: () => context.go('/community'),
+        leadingIcon: Icons.settings,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

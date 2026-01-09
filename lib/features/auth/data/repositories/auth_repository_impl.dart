@@ -175,6 +175,18 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, Unit>> sendPasswordResetEmail(String email) async {
+    try {
+      await remoteDataSource.sendPasswordResetEmail(email);
+      return const Right(unit);
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      return Left(Failure.auth(_getErrorMessage(e.code)));
+    } catch (e) {
+      return Left(Failure.server(e.toString()));
+    }
+  }
+
   String _getErrorMessage(String code) {
     switch (code) {
       case 'user-not-found':
@@ -205,6 +217,12 @@ class AuthRepositoryImpl implements AuthRepository {
         return 'Verification ID is required';
       case 'phone-number-already-exists':
         return 'This phone number is already registered';
+      case 'user-not-found':
+        return 'No user found with this email address';
+      case 'invalid-email':
+        return 'Invalid email address';
+      case 'too-many-requests':
+        return 'Too many requests. Please try again later';
       default:
         return 'Authentication failed: $code. Please try again';
     }

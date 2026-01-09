@@ -15,6 +15,7 @@ abstract class AuthRemoteDataSource {
   Future<bool> checkEmailExists(String email);
   Future<bool> checkPhoneExists(String phoneNumber);
   Future<void> saveUserPhoneNumber(String userId, String phoneNumber);
+  Future<void> sendPasswordResetEmail(String email);
 }
 
 @LazySingleton(as: AuthRemoteDataSource)
@@ -215,6 +216,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
     } catch (e) {
       throw Exception('Failed to save phone number: $e');
+    }
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on firebase_auth.FirebaseAuthException {
+      // Re-throw Firebase Auth exceptions
+      rethrow;
+    } catch (e) {
+      throw Exception('Failed to send password reset email: $e');
     }
   }
 }

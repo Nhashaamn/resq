@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:resq/core/di/injection.dart';
 import 'package:resq/core/error/failures.dart';
 import 'package:resq/features/auth/presentation/providers/auth_provider.dart';
@@ -94,6 +95,8 @@ class PrivateEmergencyMessageNotifier
     }
 
     state = state.copyWith(isLoading: true);
+    final previousMessages = Set<String>.from(state.messages.map((m) => m.id));
+    
     streamPrivateEmergencyMessagesUseCase(userEmail).listen(
       (result) {
         result.fold(
@@ -104,6 +107,10 @@ class PrivateEmergencyMessageNotifier
             );
           },
           (messages) {
+            // Update previous messages set
+            previousMessages.clear();
+            previousMessages.addAll(messages.map((m) => m.id));
+            
             state = state.copyWith(
               messages: messages,
               isLoading: false,
@@ -139,12 +146,37 @@ class PrivateEmergencyMessageNotifier
 
     state = state.copyWith(isSending: true, error: null);
 
+    // Get current location
+    double? latitude;
+    double? longitude;
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (serviceEnabled) {
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+        if (permission == LocationPermission.whileInUse || 
+            permission == LocationPermission.always) {
+          Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+          );
+          latitude = position.latitude;
+          longitude = position.longitude;
+        }
+      }
+    } catch (e) {
+      // Location is optional, continue without it
+    }
+
     final result = await sendPrivateEmergencyMessageUseCase(
       fromUserId: userId,
       fromUserName: userName,
       toEmail: toEmail,
       toPhoneNumber: toPhoneNumber,
       message: message,
+      latitude: latitude,
+      longitude: longitude,
     );
 
     return result.fold(

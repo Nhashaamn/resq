@@ -8,9 +8,19 @@ import 'package:resq/core/constants/api_constants.dart';
 import 'package:resq/core/di/injection.dart';
 import 'package:resq/core/routes/app_router.dart';
 import 'package:resq/core/theme/app_theme.dart';
-import 'package:resq/core/services/background_service.dart';
+import 'package:resq/core/services/android_shake_service.dart';
+import 'package:resq/core/services/notification_services.dart';
 import 'package:resq/features/func/data/models/emergency_contact_model.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:go_router/go_router.dart';
 import 'firebase_options.dart';
+
+// Global router reference for emergency navigation
+GoRouter? globalRouter;
+
+// Global variable to track if we need to navigate to emergency alert
+bool shouldNavigateToEmergency = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,13 +61,68 @@ void main() async {
       // This is critical, but let's try to continue
     }
 
-    // Initialize background service only on mobile platforms
+    // Initialize Android native shake service only on Android
     if (!kIsWeb) {
       try {
-        await BackgroundShakeService.initializeService();
+        // Start Android native shake detection service
+        // This works even when app is killed
+        await AndroidShakeService.startService();
+        
+        // Initialize notification action handler
+        final FlutterLocalNotificationsPlugin localNotifications =
+            FlutterLocalNotificationsPlugin();
+        
+        await localNotifications.initialize(
+          const InitializationSettings(
+            android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          ),
+          onDidReceiveNotificationResponse: (NotificationResponse response) {
+            debugPrint('Notification tapped: payload=${response.payload}, actionId=${response.actionId}');
+            
+            // Handle notification tap - navigate to emergency alert page
+            if (response.payload == '/emergency-alert') {
+              // Set flag to navigate when router is ready
+              shouldNavigateToEmergency = true;
+              
+              // Navigate to emergency alert page when notification is tapped
+              // Use multiple callbacks to ensure navigation happens
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  if (globalRouter != null) {
+                    debugPrint('Navigating to /emergency-alert');
+                    globalRouter!.go('/emergency-alert');
+                    shouldNavigateToEmergency = false;
+                  } else {
+                    debugPrint('Router not available yet, will retry');
+                    // Retry after a delay
+                    Future.delayed(const Duration(seconds: 1), () {
+                      if (globalRouter != null) {
+                        globalRouter!.go('/emergency-alert');
+                        shouldNavigateToEmergency = false;
+                      }
+                    });
+                  }
+                });
+              });
+            }
+            // Handle notification action tap
+            if (response.actionId == 'ok_action') {
+              // User pressed "I'm OK" - cancel emergency timer
+              FlutterBackgroundService().invoke('cancel_emergency_timer');
+            }
+          },
+        );
       } catch (e) {
         debugPrint('Warning: Failed to initialize background service: $e');
         // Background service is not critical for app to run
+      }
+      
+      // Request notification permissions
+      try {
+        final notificationServices = NotificationServices();
+        await notificationServices.requestPermission();
+      } catch (e) {
+        debugPrint('Warning: Failed to request notification permissions: $e');
       }
     }
   } catch (e, stackTrace) {
@@ -80,11 +145,54 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Check for emergency navigation after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForEmergencyNavigation();
+    });
+  }
+
+  void _checkForEmergencyNavigation() {
+    // Check if we need to navigate to emergency alert
+    if (shouldNavigateToEmergency && globalRouter != null) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted && globalRouter != null) {
+          debugPrint('Auto-navigating to /emergency-alert on app start');
+          globalRouter!.go('/emergency-alert');
+          shouldNavigateToEmergency = false;
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
+    // Store router reference globally for emergency navigation
+    globalRouter = router;
+    
+    // Check for emergency navigation when router changes
+    if (shouldNavigateToEmergency && router.routerDelegate.currentConfiguration.uri.path != '/emergency-alert') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && globalRouter != null) {
+            globalRouter!.go('/emergency-alert');
+            shouldNavigateToEmergency = false;
+          }
+        });
+      });
+    }
+    
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'ResQ',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:resq/core/theme/app_theme.dart';
 import 'package:resq/features/func/presentation/providers/private_emergency_message_provider.dart';
 import 'package:resq/features/func/presentation/widgets/appbar.dart';
@@ -35,8 +36,10 @@ class _PrivateEmergencyMessagesPageState extends ConsumerState<PrivateEmergencyM
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppbarWidget(
         title: 'Emergency Messages',
-        icon: Icons.arrow_back,
-        onTap: () => context.pop(),
+        icon: Icons.close,
+        onTap: () => context.go('/community'),
+        
+        leadingIcon: Icons.emergency_rounded,
       ),
       body: privateMessagesState.isLoading
           ? const Center(
@@ -178,11 +181,265 @@ class _PrivateEmergencyMessagesPageState extends ConsumerState<PrivateEmergencyM
                               color: AppTheme.textSecondary,
                             ),
                           ),
+                          // Show map if location is available
+                          if (message.latitude != null && message.longitude != null) ...[
+                            const SizedBox(height: 12),
+                            GestureDetector(
+                              onTap: () => _showFullScreenMap(
+                                context,
+                                message.latitude!,
+                                message.longitude!,
+                                message.fromUserName,
+                              ),
+                              child: Container(
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppTheme.borderLight,
+                                    width: 1,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Stack(
+                                  children: [
+                                    GoogleMap(
+                                      initialCameraPosition: CameraPosition(
+                                        target: LatLng(
+                                          message.latitude!,
+                                          message.longitude!,
+                                        ),
+                                        zoom: 15.0,
+                                      ),
+                                      markers: {
+                                        Marker(
+                                          markerId: MarkerId('location_${message.id}'),
+                                          position: LatLng(
+                                            message.latitude!,
+                                            message.longitude!,
+                                          ),
+                                          icon: BitmapDescriptor.defaultMarkerWithHue(
+                                            BitmapDescriptor.hueRed,
+                                          ),
+                                        ),
+                                      },
+                                      mapType: MapType.normal,
+                                      zoomControlsEnabled: false,
+                                      zoomGesturesEnabled: false,
+                                      scrollGesturesEnabled: false,
+                                      tiltGesturesEnabled: false,
+                                      rotateGesturesEnabled: false,
+                                      myLocationButtonEnabled: false,
+                                      myLocationEnabled: false,
+                                      mapToolbarEnabled: false,
+                                    ),
+                                    // Overlay to indicate it's tappable
+                                    Positioned.fill(
+                                      child: Container(
+                                        color: Colors.transparent,
+                                        child: Center(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.primary.withOpacity(0.9),
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.fullscreen,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Tap to view full map',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     );
                   },
                 ),
+    );
+  }
+
+  void _showFullScreenMap(
+    BuildContext context,
+    double latitude,
+    double longitude,
+    String userName,
+  ) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+          ),
+          child: Stack(
+            children: [
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(latitude, longitude),
+                  zoom: 16.0,
+                ),
+                markers: {
+                  Marker(
+                    markerId: const MarkerId('emergency_location'),
+                    position: LatLng(latitude, longitude),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueRed,
+                    ),
+                    infoWindow: InfoWindow(
+                      title: 'Emergency Location',
+                      snippet: 'From: $userName',
+                    ),
+                  ),
+                },
+                mapType: MapType.normal,
+                zoomControlsEnabled: true,
+                zoomGesturesEnabled: true,
+                scrollGesturesEnabled: true,
+                tiltGesturesEnabled: true,
+                rotateGesturesEnabled: true,
+                myLocationButtonEnabled: true,
+                myLocationEnabled: true,
+                mapToolbarEnabled: true,
+              ),
+              // Close button
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 16,
+                right: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ),
+              // Location info card
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+                left: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.errorRed.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.location_on,
+                              color: AppTheme.errorRed,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Emergency Location',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'From: $userName',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Coordinates: ${latitude.toStringAsFixed(6)}, ${longitude.toStringAsFixed(6)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textLight,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

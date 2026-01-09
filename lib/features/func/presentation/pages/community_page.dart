@@ -92,11 +92,12 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppbarWidget(
         title: 'Community Chat',
-        icon: Icons.settings,
-        leadingIcon: Icons.arrow_back,
+        icon: Icons.close,
+        leadingIcon: Icons.chat,
         onTap: () {
           context.go('/community');
         },
+        
       ),
       body: Column(
         children: [

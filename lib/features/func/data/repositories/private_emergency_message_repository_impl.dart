@@ -20,6 +20,8 @@ class PrivateEmergencyMessageRepositoryImpl
     required String toEmail,
     required String toPhoneNumber,
     required String message,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       final model = PrivateEmergencyMessageModel(
@@ -30,6 +32,8 @@ class PrivateEmergencyMessageRepositoryImpl
         toPhoneNumber: toPhoneNumber,
         message: message,
         timestamp: DateTime.now(),
+        latitude: latitude,
+        longitude: longitude,
       );
 
       await remoteDataSource.sendPrivateEmergencyMessage(model);

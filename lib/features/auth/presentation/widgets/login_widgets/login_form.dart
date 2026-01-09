@@ -116,7 +116,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             child: AppTextButton(
               text: 'Forgot your password?',
               onPressed: () {
-                // TODO: Implement forgot password
+                context.go('/forgot-password');
               },
             ),
           ),

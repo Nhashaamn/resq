@@ -15,6 +15,7 @@ import 'package:resq/features/func/presentation/pages/maps_page.dart';
 import 'package:resq/features/func/presentation/pages/setting.dart';
 import 'package:resq/features/func/presentation/providers/group_provider.dart';
 import 'package:resq/features/func/presentation/widgets/main_shell.dart';
+import 'package:resq/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:resq/features/auth/presentation/pages/login_page.dart';
 import 'package:resq/features/auth/presentation/pages/otp_page.dart';
 import 'package:resq/features/auth/presentation/pages/phone_page.dart';
@@ -22,6 +23,19 @@ import 'package:resq/features/auth/presentation/pages/signup_page.dart';
 import 'package:resq/features/auth/presentation/pages/start_page.dart';
 import 'package:resq/features/auth/presentation/providers/auth_provider.dart';
 import 'package:resq/features/func/presentation/pages/address_page.dart';
+import 'package:resq/features/func/presentation/pages/emergency_alert_page.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/earth_quack.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/earth_quack_guide.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/fire.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/fire_guide.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/flood.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/flood_guide.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/storm.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/storm_guide.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/tsunami.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/tsunami_guide.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/volcano.dart';
+import 'package:resq/features/func/presentation/pages/disaster_guides/volcano_guide.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -61,6 +75,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToSignup = state.matchedLocation == '/signup';
+      final isGoingToForgotPassword = state.matchedLocation == '/forgot-password';
       final isGoingToProtected = state.matchedLocation == '/home' ||
           state.matchedLocation == '/chatsetting' ||
           state.matchedLocation == '/chatbot' ||
@@ -70,21 +85,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/setting' ||
           state.matchedLocation.startsWith('/group/') ||
           state.matchedLocation == '/groups' ||
-          state.matchedLocation.startsWith('/join/');
+          state.matchedLocation.startsWith('/join/') ||
+          state.matchedLocation == '/earth_quack' ||
+          state.matchedLocation.startsWith('/earth_quack/') ||
+          state.matchedLocation == '/fire' ||
+          state.matchedLocation.startsWith('/fire/') ||
+          state.matchedLocation == '/flood' ||
+          state.matchedLocation.startsWith('/flood/') ||
+          state.matchedLocation == '/storm' ||
+          state.matchedLocation.startsWith('/storm/') ||
+          state.matchedLocation == '/tsunami' ||
+          state.matchedLocation.startsWith('/tsunami/') ||
+          state.matchedLocation == '/volcano' ||
+          state.matchedLocation.startsWith('/volcano/');
       final isGoingToAddress = state.matchedLocation == '/address';
+      final isGoingToEmergencyAlert = state.matchedLocation == '/emergency-alert';
       
       // If still loading, don't redirect (let it finish loading first)
       if (authState.isLoading) {
         return null;
       }
       
-      // If authenticated and trying to access login/signup, redirect to home
-      if (isAuthenticated && (isGoingToLogin || isGoingToSignup)) {
+      // If authenticated and trying to access login/signup/forgot-password, redirect to home
+      if (isAuthenticated && (isGoingToLogin || isGoingToSignup || isGoingToForgotPassword)) {
         return '/home';
       }
       
       // If not authenticated and trying to access protected routes or address, redirect to login
-      if (!isAuthenticated && (isGoingToProtected || isGoingToAddress)) {
+      // Emergency alert can be accessed without auth (for panic mode)
+      if (!isAuthenticated && (isGoingToProtected || isGoingToAddress) && !isGoingToEmergencyAlert) {
         return '/login';
       }
       
@@ -104,6 +133,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SignupPage(),
       ),
       GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
         path: '/phone',
         builder: (context, state) => const PhonePage(),
       ),
@@ -120,6 +153,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/address',
         builder: (context, state) => const AddressPage(),
+      ),
+      GoRoute(
+        path: '/emergency-alert',
+        builder: (context, state) => const EmergencyAlertPage(),
       ),
       GoRoute(
         path: '/setting',
@@ -185,6 +222,54 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/chatbot',
             builder: (context, state) => const ChatbotPage(),
+          ),
+          GoRoute(
+            path: '/earth_quack',
+            builder: (context, state) => const EarthQuack(),
+          ),
+          GoRoute(
+            path: '/earth_quack/guide',
+            builder: (context, state) => const EarthQuackGuide(),
+          ),
+          GoRoute(
+            path: '/fire',
+            builder: (context, state) => const Fire(),
+          ),
+          GoRoute(
+            path: '/fire/guide',
+            builder: (context, state) => const FireGuide(),
+          ),
+          GoRoute(
+            path: '/flood',
+            builder: (context, state) => const Flood(),
+          ),
+          GoRoute(
+            path: '/flood/guide',
+            builder: (context, state) => const FloodGuide(),
+          ),
+          GoRoute(
+            path: '/storm',
+            builder: (context, state) => const Storm(),
+          ),
+          GoRoute(
+            path: '/storm/guide',
+            builder: (context, state) => const StormGuide(),
+          ),
+          GoRoute(
+            path: '/tsunami',
+            builder: (context, state) => const Tsunami(),
+          ),
+          GoRoute(
+            path: '/tsunami/guide',
+            builder: (context, state) => const TsunamiGuide(),
+          ),
+          GoRoute(
+            path: '/volcano',
+            builder: (context, state) => const Volcano(),
+          ),
+          GoRoute(
+            path: '/volcano/guide',
+            builder: (context, state) => const VolcanoGuide(),
           ),
         ],
       ),

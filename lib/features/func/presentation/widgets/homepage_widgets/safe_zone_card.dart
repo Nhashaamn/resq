@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:resq/core/theme/app_theme.dart';
 import 'package:resq/features/func/domain/entities/safe_zone.dart';
 import 'package:resq/features/func/presentation/providers/nearby_safe_zones_provider.dart';
@@ -32,6 +34,99 @@ class SafeZoneCard extends ConsumerWidget {
     }
   }
 
+  Future<void> _openNativeMapApp(BuildContext context, LatLng destination, String destinationName) async {
+    try {
+      // Get user's current location
+      Position? currentPosition;
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (serviceEnabled) {
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+          }
+          if (permission == LocationPermission.whileInUse || 
+              permission == LocationPermission.always) {
+            currentPosition = await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high,
+            );
+          }
+        }
+      } catch (e) {
+        // If we can't get location, we'll still open map without origin
+        debugPrint('Error getting current location: $e');
+      }
+
+      Uri mapUrl;
+      
+      if (Platform.isAndroid) {
+        // Android: Use Google Maps navigation
+        if (currentPosition != null) {
+          // With origin and destination
+          mapUrl = Uri.parse(
+            'google.navigation:q=${destination.latitude},${destination.longitude}'
+          );
+        } else {
+          // Without origin, just show destination
+          mapUrl = Uri.parse(
+            'geo:${destination.latitude},${destination.longitude}?q=${destination.latitude},${destination.longitude}(${Uri.encodeComponent(destinationName)})'
+          );
+        }
+      } else if (Platform.isIOS) {
+        // iOS: Use Apple Maps
+        if (currentPosition != null) {
+          // With origin and destination
+          mapUrl = Uri.parse(
+            'http://maps.apple.com/?saddr=${currentPosition.latitude},${currentPosition.longitude}&daddr=${destination.latitude},${destination.longitude}&dirflg=d'
+          );
+        } else {
+          // Without origin, just show destination
+          mapUrl = Uri.parse(
+            'http://maps.apple.com/?daddr=${destination.latitude},${destination.longitude}&dirflg=d'
+          );
+        }
+      } else {
+        // Fallback for other platforms
+        mapUrl = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}'
+        );
+      }
+
+      if (await canLaunchUrl(mapUrl)) {
+        await launchUrl(
+          mapUrl,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        // Fallback to web-based Google Maps
+        final webUrl = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}'
+        );
+        if (await canLaunchUrl(webUrl)) {
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Unable to open map application'),
+                backgroundColor: AppTheme.errorRed,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening map: $e'),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final nearbyZonesState = ref.watch(nearbySafeZonesProvider);
@@ -46,8 +141,7 @@ class SafeZoneCard extends ConsumerWidget {
     LatLng? safeZoneLocation;
     if (nearestZone.zone.type == SafeZoneType.circle && nearestZone.zone.center != null) {
       safeZoneLocation = nearestZone.zone.center;
-    } else if (nearestZone.zone.type == SafeZoneType.polygon && 
-               nearestZone.zone.polygonPoints != null && 
+    } else if (nearestZone.zone.polygonPoints != null && 
                nearestZone.zone.polygonPoints!.isNotEmpty) {
       // For polygon, use the first point as the location
       safeZoneLocation = nearestZone.zone.polygonPoints!.first;
@@ -55,14 +149,7 @@ class SafeZoneCard extends ConsumerWidget {
     
     return InkWell(
       onTap: safeZoneLocation != null
-          ? () {
-              // Navigate to maps page with safe zone location
-              context.go('/maps', extra: {
-                'safeZoneId': nearestZone.zone.id,
-                'safeZoneLocation': safeZoneLocation,
-                'safeZoneName': nearestZone.zone.name,
-              });
-            }
+          ? () => _openNativeMapApp(context, safeZoneLocation!, nearestZone.zone.name)
           : null,
       borderRadius: BorderRadius.circular(20),
       child: Container(

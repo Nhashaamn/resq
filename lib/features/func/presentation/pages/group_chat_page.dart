@@ -158,6 +158,8 @@ class _GroupChatPageState extends ConsumerState<GroupChatPage> {
         title: group.name,
         icon: Icons.share_rounded,
         onTap: _shareGroupLink,
+        onLeadingTap: () => context.go('/community'),
+        leadingIcon: Icons.arrow_back_ios_new_rounded,
       ),
       body: Column(
         children: [

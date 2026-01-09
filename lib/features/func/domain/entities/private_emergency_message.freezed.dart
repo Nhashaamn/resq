@@ -24,6 +24,8 @@ mixin _$PrivateEmergencyMessage {
   String get message => throw _privateConstructorUsedError;
   DateTime get timestamp => throw _privateConstructorUsedError;
   bool get isRead => throw _privateConstructorUsedError;
+  double? get latitude => throw _privateConstructorUsedError;
+  double? get longitude => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $PrivateEmergencyMessageCopyWith<PrivateEmergencyMessage> get copyWith =>
@@ -44,7 +46,9 @@ abstract class $PrivateEmergencyMessageCopyWith<$Res> {
       String toPhoneNumber,
       String message,
       DateTime timestamp,
-      bool isRead});
+      bool isRead,
+      double? latitude,
+      double? longitude});
 }
 
 /// @nodoc
@@ -69,6 +73,8 @@ class _$PrivateEmergencyMessageCopyWithImpl<$Res,
     Object? message = null,
     Object? timestamp = null,
     Object? isRead = null,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -103,6 +109,14 @@ class _$PrivateEmergencyMessageCopyWithImpl<$Res,
           ? _value.isRead
           : isRead // ignore: cast_nullable_to_non_nullable
               as bool,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
     ) as $Val);
   }
 }
@@ -124,7 +138,9 @@ abstract class _$$PrivateEmergencyMessageImplCopyWith<$Res>
       String toPhoneNumber,
       String message,
       DateTime timestamp,
-      bool isRead});
+      bool isRead,
+      double? latitude,
+      double? longitude});
 }
 
 /// @nodoc
@@ -148,6 +164,8 @@ class __$$PrivateEmergencyMessageImplCopyWithImpl<$Res>
     Object? message = null,
     Object? timestamp = null,
     Object? isRead = null,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
   }) {
     return _then(_$PrivateEmergencyMessageImpl(
       id: null == id
@@ -182,6 +200,14 @@ class __$$PrivateEmergencyMessageImplCopyWithImpl<$Res>
           ? _value.isRead
           : isRead // ignore: cast_nullable_to_non_nullable
               as bool,
+      latitude: freezed == latitude
+          ? _value.latitude
+          : latitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      longitude: freezed == longitude
+          ? _value.longitude
+          : longitude // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -197,7 +223,9 @@ class _$PrivateEmergencyMessageImpl implements _PrivateEmergencyMessage {
       required this.toPhoneNumber,
       required this.message,
       required this.timestamp,
-      this.isRead = false});
+      this.isRead = false,
+      this.latitude,
+      this.longitude});
 
   @override
   final String id;
@@ -216,10 +244,14 @@ class _$PrivateEmergencyMessageImpl implements _PrivateEmergencyMessage {
   @override
   @JsonKey()
   final bool isRead;
+  @override
+  final double? latitude;
+  @override
+  final double? longitude;
 
   @override
   String toString() {
-    return 'PrivateEmergencyMessage(id: $id, fromUserId: $fromUserId, fromUserName: $fromUserName, toEmail: $toEmail, toPhoneNumber: $toPhoneNumber, message: $message, timestamp: $timestamp, isRead: $isRead)';
+    return 'PrivateEmergencyMessage(id: $id, fromUserId: $fromUserId, fromUserName: $fromUserName, toEmail: $toEmail, toPhoneNumber: $toPhoneNumber, message: $message, timestamp: $timestamp, isRead: $isRead, latitude: $latitude, longitude: $longitude)';
   }
 
   @override
@@ -238,12 +270,16 @@ class _$PrivateEmergencyMessageImpl implements _PrivateEmergencyMessage {
             (identical(other.message, message) || other.message == message) &&
             (identical(other.timestamp, timestamp) ||
                 other.timestamp == timestamp) &&
-            (identical(other.isRead, isRead) || other.isRead == isRead));
+            (identical(other.isRead, isRead) || other.isRead == isRead) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, id, fromUserId, fromUserName,
-      toEmail, toPhoneNumber, message, timestamp, isRead);
+      toEmail, toPhoneNumber, message, timestamp, isRead, latitude, longitude);
 
   @JsonKey(ignore: true)
   @override
@@ -262,7 +298,9 @@ abstract class _PrivateEmergencyMessage implements PrivateEmergencyMessage {
       required final String toPhoneNumber,
       required final String message,
       required final DateTime timestamp,
-      final bool isRead}) = _$PrivateEmergencyMessageImpl;
+      final bool isRead,
+      final double? latitude,
+      final double? longitude}) = _$PrivateEmergencyMessageImpl;
 
   @override
   String get id;
@@ -280,6 +318,10 @@ abstract class _PrivateEmergencyMessage implements PrivateEmergencyMessage {
   DateTime get timestamp;
   @override
   bool get isRead;
+  @override
+  double? get latitude;
+  @override
+  double? get longitude;
   @override
   @JsonKey(ignore: true)
   _$$PrivateEmergencyMessageImplCopyWith<_$PrivateEmergencyMessageImpl>

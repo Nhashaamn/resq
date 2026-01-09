@@ -97,6 +97,14 @@ dependencies:
   flutter_background_service: ^5.0.1
   flutter_local_notifications: ^17.0.0
 
+  app_settings: ^7.0.0
+
+  firebase_messaging: ^16.1.0
+ 
+
+  #animation
+  lottie: ^3.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -144,6 +152,8 @@ flutter:
    - assets/pics/volcano.png
    - assets/pics/flood.png
    - assets/pics/wind.png
+   - assets/animation/earth_quack.json
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

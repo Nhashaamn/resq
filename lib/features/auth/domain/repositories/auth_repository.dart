@@ -12,5 +12,6 @@ abstract class AuthRepository {
   Future<Either<Failure, Unit>> logout();
   Future<Either<Failure, bool>> checkEmailExists(String email);
   Future<Either<Failure, bool>> checkPhoneExists(String phoneNumber);
+  Future<Either<Failure, Unit>> sendPasswordResetEmail(String email);
 }
 

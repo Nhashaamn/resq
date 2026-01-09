@@ -21,6 +21,8 @@ import 'package:resq/features/auth/data/repositories/auth_repository_impl.dart'
     as _i124;
 import 'package:resq/features/auth/domain/repositories/auth_repository.dart'
     as _i474;
+import 'package:resq/features/auth/domain/usecases/forgot_password_usecase.dart'
+    as _i514;
 import 'package:resq/features/auth/domain/usecases/get_current_user_usecase.dart'
     as _i998;
 import 'package:resq/features/auth/domain/usecases/google_sign_in_usecase.dart'
@@ -236,6 +238,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i5.StreamPrivateEmergencyMessagesUseCase>(() =>
         _i5.StreamPrivateEmergencyMessagesUseCase(
             gh<_i179.PrivateEmergencyMessageRepository>()));
+    gh.factory<_i514.ForgotPasswordUseCase>(
+        () => _i514.ForgotPasswordUseCase(gh<_i474.AuthRepository>()));
     gh.factory<_i998.GetCurrentUserUseCase>(
         () => _i998.GetCurrentUserUseCase(gh<_i474.AuthRepository>()));
     gh.factory<_i795.GoogleSignInUseCase>(

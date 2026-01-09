@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resq/core/di/injection.dart';
 import 'package:resq/features/auth/domain/entities/user.dart' as domain;
+import 'package:resq/features/auth/domain/usecases/forgot_password_usecase.dart';
 import 'package:resq/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:resq/features/auth/domain/usecases/google_sign_in_usecase.dart';
 import 'package:resq/features/auth/domain/usecases/login_usecase.dart';
@@ -16,6 +17,7 @@ final verifyPhoneOtpUseCaseProvider = Provider((ref) => getIt<VerifyPhoneOtpUseC
 final googleSignInUseCaseProvider = Provider((ref) => getIt<GoogleSignInUseCase>());
 final getCurrentUserUseCaseProvider = Provider((ref) => getIt<GetCurrentUserUseCase>());
 final logoutUseCaseProvider = Provider((ref) => getIt<LogoutUseCase>());
+final forgotPasswordUseCaseProvider = Provider((ref) => getIt<ForgotPasswordUseCase>());
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
@@ -135,6 +137,73 @@ class LoginFormState {
     String? error,
   }) {
     return LoginFormState(
+      isLoading: isLoading ?? this.isLoading,
+      success: success ?? this.success,
+      error: error,
+    );
+  }
+}
+
+// Forgot Password Provider
+final forgotPasswordProvider =
+    StateNotifierProvider<ForgotPasswordNotifier, ForgotPasswordState>(
+  (ref) => ForgotPasswordNotifier(ref),
+);
+
+class ForgotPasswordNotifier extends StateNotifier<ForgotPasswordState> {
+  final Ref ref;
+
+  ForgotPasswordNotifier(this.ref) : super(const ForgotPasswordState());
+
+  Future<void> sendPasswordResetEmail({
+    required String email,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    final forgotPasswordUseCase = ref.read(forgotPasswordUseCaseProvider);
+    final result = await forgotPasswordUseCase(email);
+
+    result.fold(
+      (failure) {
+        state = state.copyWith(
+          isLoading: false,
+          error: failure.when(
+            server: (msg) => msg,
+            network: (msg) => msg,
+            cache: (msg) => msg,
+            validation: (msg) => msg,
+            auth: (msg) => msg,
+          ),
+        );
+      },
+      (_) {
+        state = state.copyWith(isLoading: false, success: true);
+      },
+    );
+  }
+
+  void reset() {
+    state = const ForgotPasswordState();
+  }
+}
+
+class ForgotPasswordState {
+  final bool isLoading;
+  final bool success;
+  final String? error;
+
+  const ForgotPasswordState({
+    this.isLoading = false,
+    this.success = false,
+    this.error,
+  });
+
+  ForgotPasswordState copyWith({
+    bool? isLoading,
+    bool? success,
+    String? error,
+  }) {
+    return ForgotPasswordState(
       isLoading: isLoading ?? this.isLoading,
       success: success ?? this.success,
       error: error,

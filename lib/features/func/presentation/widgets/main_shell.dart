@@ -12,6 +12,21 @@ class MainShell extends StatelessWidget {
     required this.location,
   });
 
+  bool _shouldShowBottomNav(String location) {
+    // Hide bottom nav for disaster guide pages (intro and guide screens)
+    final disasterRoutes = [
+      '/earth_quack',
+      '/fire',
+      '/flood',
+      '/storm',
+      '/tsunami',
+      '/volcano',
+    ];
+    final isDisasterRoute = disasterRoutes.any((route) => 
+      location == route || location.startsWith('$route/'));
+    return !isDisasterRoute;
+  }
+
   int _getCurrentIndex(String location) {
     if (location == '/home' || location.startsWith('/home/')) {
       return 0;
@@ -45,58 +60,61 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentIndex = _getCurrentIndex(location);
+    final showBottomNav = _shouldShowBottomNav(location);
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: (index) => _onItemTapped(context, index),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppTheme.white,
-          selectedItemColor: AppTheme.primary,
-          unselectedItemColor: AppTheme.textSecondary,
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 12,
-          ),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              activeIcon: Icon(Icons.home_rounded),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map_rounded),
-              activeIcon: Icon(Icons.map_rounded),
-              label: 'Maps',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people_rounded),
-              activeIcon: Icon(Icons.people_rounded),
-              label: 'Community',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.smart_toy_outlined),
-              activeIcon: Icon(Icons.smart_toy),
-              label: 'AI Assistant',
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: showBottomNav
+          ? Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: currentIndex,
+                onTap: (index) => _onItemTapped(context, index),
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: AppTheme.white,
+                selectedItemColor: AppTheme.primary,
+                unselectedItemColor: AppTheme.textSecondary,
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_rounded),
+                    activeIcon: Icon(Icons.home_rounded),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.map_rounded),
+                    activeIcon: Icon(Icons.map_rounded),
+                    label: 'Maps',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.people_rounded),
+                    activeIcon: Icon(Icons.people_rounded),
+                    label: 'Community',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.smart_toy_outlined),
+                    activeIcon: Icon(Icons.smart_toy),
+                    label: 'AI Assistant',
+                  ),
+                ],
+              ),
+            )
+          : null,
     );
   }
 }

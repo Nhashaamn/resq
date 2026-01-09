@@ -13,6 +13,8 @@ class PrivateEmergencyMessage with _$PrivateEmergencyMessage {
     required String message,
     required DateTime timestamp,
     @Default(false) bool isRead,
+    double? latitude,
+    double? longitude,
   }) = _PrivateEmergencyMessage;
 }
 

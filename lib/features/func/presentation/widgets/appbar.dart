@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:resq/core/theme/app_theme.dart';
 
 class AppbarWidget extends StatelessWidget implements PreferredSizeWidget {
-  const AppbarWidget({super.key, required this.title, this.icon, this.onTap, this.leadingIcon});
+  const AppbarWidget({super.key, required this.title, this.icon, this.onTap, this.leadingIcon, this.onLeadingTap});
   final String title;
   final IconData? icon;
   final VoidCallback? onTap;
   final IconData? leadingIcon;
+  final VoidCallback? onLeadingTap;
 
   @override
   Size get preferredSize => const Size.fromHeight(72);
@@ -30,7 +31,7 @@ class AppbarWidget extends StatelessWidget implements PreferredSizeWidget {
               color: AppTheme.primary.withOpacity(0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(leadingIcon ?? Icons.home, color: AppTheme.primary),
+            child: IconButton(onPressed: onLeadingTap, icon: Icon(leadingIcon ?? Icons.home, color: AppTheme.primary)),
           ),
         ),
         title: Column(

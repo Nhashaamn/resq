@@ -44,7 +44,7 @@ class WarningCard extends ConsumerWidget {
         color: AppTheme.backgroundWhite,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.warningYellow.withOpacity(0.5),
+          color: AppTheme.errorRed.withOpacity(0.5),
           width: 2,
         ),
         boxShadow: [
@@ -99,7 +99,7 @@ class WarningCard extends ConsumerWidget {
               color: AppTheme.warningYellow.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppTheme.warningYellow.withOpacity(0.5),
+                color: AppTheme.errorRed.withOpacity(0.5),
                 width: 1,
               ),
             ),

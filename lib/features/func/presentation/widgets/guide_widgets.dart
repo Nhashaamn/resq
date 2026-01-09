@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:resq/core/theme/app_theme.dart';
 
 class GuideWidgets extends StatelessWidget {
@@ -6,12 +7,12 @@ class GuideWidgets extends StatelessWidget {
 
   // List of disaster guides with image paths and labels
   final List<Map<String, String>> disasterGuides = const [
-    {'image': 'assets/pics/earth_quack.png', 'label': 'Earthquake'},
-    {'image': 'assets/pics/fire.png', 'label': 'Fire'},
-    {'image': 'assets/pics/flood.png', 'label': 'Flood'},
-    {'image': 'assets/pics/tsunami.png', 'label': 'Tsunami'},
-    {'image': 'assets/pics/volcano.png', 'label': 'Volcano'},
-    {'image': 'assets/pics/wind.png', 'label': 'Storm'},
+    {'image': 'assets/pics/earth_quack.png', 'label': 'Earthquake' , 'route': '/earth_quack'},
+    {'image': 'assets/pics/fire.png', 'label': 'Fire' , 'route': '/fire'},
+    {'image': 'assets/pics/flood.png', 'label': 'Flood' , 'route': '/flood'},
+    {'image': 'assets/pics/tsunami.png', 'label': 'Tsunami' , 'route': '/tsunami'},
+    {'image': 'assets/pics/volcano.png', 'label': 'Volcano' , 'route': '/volcano'},
+    {'image': 'assets/pics/wind.png', 'label': 'Storm' , 'route': '/storm'},
   ];
 
   @override
@@ -90,6 +91,7 @@ class GuideWidgets extends StatelessWidget {
               return _GuideItem(
                 imagePath: guide['image']!,
                 label: guide['label']!,
+                route: guide['route']!,
               );
             },
           ),
@@ -102,17 +104,19 @@ class GuideWidgets extends StatelessWidget {
 class _GuideItem extends StatelessWidget {
   final String imagePath;
   final String label;
+  final String route;
 
   const _GuideItem({
     required this.imagePath,
     required this.label,
+    required this.route,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to guide details page
+        context.go(route);
       },
       child: Container(
         decoration: BoxDecoration(

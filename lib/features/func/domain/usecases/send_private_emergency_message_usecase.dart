@@ -15,6 +15,8 @@ class SendPrivateEmergencyMessageUseCase {
     required String toEmail,
     required String toPhoneNumber,
     required String message,
+    double? latitude,
+    double? longitude,
   }) async {
     if (fromUserId.isEmpty) {
       return const Left(Failure.validation('User ID cannot be empty'));
@@ -35,6 +37,8 @@ class SendPrivateEmergencyMessageUseCase {
       toEmail: toEmail.trim(),
       toPhoneNumber: toPhoneNumber.trim(),
       message: message.trim(),
+      latitude: latitude,
+      longitude: longitude,
     );
   }
 }
